@@ -1,5 +1,3 @@
-## Contributing
+## 贡献
 
-We welcome contributions to this guide and discussion about its
-contents. Please open an issue or pull request on this repository to
-propose a change.
+我们欢迎任何关于本指南相关内容的讨论和贡献。如有任何修改建议，请在本版本库建立 issue 或 pull request。

@@ -1,5 +1,5 @@
-## License
+## 许可
 
-Copyright the [project contributors](CONTRIBUTORS.md).
+[项目贡献人](CONTRIBUTORS.md)版权所有。
 
-Released under a [Creative Commons Attribution 3.0 Unported License](http://creativecommons.org/licenses/by/3.0/).
+在 [Creative Commons Attribution 3.0 Unported License](http://creativecommons.org/licenses/by/3.0/) 下发布。

@@ -2,13 +2,18 @@
 
 ## 概述
 
-该指南讲解了一系列 TTP+JSON API 设计经验。这些经验最初来自 [Heroku 平台 API](https://devcenter.heroku.com/articles/platform-api-reference) 的实践。
+该指南讲解了一系列 TTP+JSON API 设计经验。这些经验最初来自 
+[Heroku 平台 API](https://devcenter.heroku.com/articles/platform-api-reference) 
+的实践。
 
-该指南对此 API 进行了补充，并且对 Heroku 的新的内部 API 起到了指导作用。我们希望在 Heroku 之外的 API 设计者也会对此感兴趣。
+该指南对此 API 进行了补充，并且对 Heroku 的新的内部 API 起到了指导作用。
+我们希望在 Heroku 之外的 API 设计者也会对此感兴趣。
 
-本文的目标是在保持一致性，且关注业务逻辑的同时，避免设计歧义。我们一直在寻找_一种良好的、一致的、文档化的方法_来设计 API，但没必要是_唯一的/理想化的方法_。
+本文的目标是在保持一致性，且关注业务逻辑的同时，避免设计歧义。我们一直在寻找
+_一种良好的、一致的、文档化的方法_来设计 API，但没必要是_唯一的/理想化的方法_。
 
-本文假设读者已经对 HTTP+JSON API 的基本知识有所了解，因此不会在指南中涵盖所有的基础概念。
+本文假设读者已经对 HTTP+JSON API 的基本知识有所了解，
+因此不会在指南中涵盖所有的基础概念。
 
 欢迎对该指南给与[贡献](CONTRIBUTING.md)。
 
@@ -46,48 +51,36 @@
 
 #### 必须使用 TLS
 
-Require TLS to access the API, without exception. It’s not worth trying
-to figure out or explain when it is OK to use TLS and when it’s not.
-Just require TLS for everything.
+必须使用 TLS 来访问 API，没有例外。任何试图阐明或解释什么时候用它合适，
+什么时候用它不合适都是徒劳。让任何请求都需要使用 TLS。
 
-Respond to non-TLS requests with `403 Forbidden`.  Redirects are 
-discouraged since they allow sloppy/bad client behaviour without 
-providing any clear gain.  Clients that rely on redirects double up on 
-server traffic and render TLS useless since sensitive data will already
- have been exposed during the first call.
+对于非 TLS 请求都只响应 `403 Forbidden`。由于马虎的/恶意的客户端行为无法提供任何明确的保障，所以不建议使用重定向。
+重定向的客户端使得服务器的流量成倍增长，并且会在第一次调用的时候让敏感的数据暴露出来，使得 TLS 不起作用。
 
 #### 用 Accept 头指定版本
 
-Version the API from the start. Use the `Accepts` header to communicate
-the version, along with a custom content type, e.g.:
+从一开始就对 API 添加版本。使用 `Accept` 头和自定义的内容类型来指定版本，例如：
 
 ```
 Accept: application/vnd.heroku+json; version=3
 ```
 
-Prefer not to have a default version, instead requiring clients to
-explicitly peg their usage to a specific version.
+最好不要用默认的版本，让客户端明确指出它们需要使用的版本。
 
 #### 利用 Etag 支持缓存
 
-Include an `ETag` header in all responses, identifying the specific
-version of the returned resource. The user should be able to check for
-staleness in their subsequent requests by supplying the value in the
-`If-None-Match` header.
+在所有响应中包含 `ETag` 头，用以标识返回资源的特定版本。
+用户应当可以在随后的请求中，通过在 `If-None-Match` 头中指定该值来检查过期。
 
 #### 通过 Request-Id 跟踪请求
 
-Include a `Request-Id` header in each API response, populated with a
-UUID value. If both the server and client log these values, it will be
-helpful for tracing and debugging requests.
+在每个 API 响应中包含 `Request-Id` 头，并附加一个 UUID 值。
+如果服务器和客户端都对该值进行了记录，那么在跟踪和调试请求的时候会非常有用。
 
 #### 使用 Content-Range 进行分页
 
-Paginate any responses that are liable to produce large amounts of data.
-Use `Content-Range` headers to convey pagination requests. Follow the
-example of the [Heroku Platform API on Ranges](https://devcenter.heroku.com/articles/platform-api-reference#ranges)
-for the details of request and response headers, status codes, limits,
-ordering, and page-walking.
+对任何响应都进行分页，使得大量数据容易被处理。
+使用 `Content-Range` 头来传递分页请求。参阅 [Heroku Platform API on Ranges](https://devcenter.heroku.com/articles/platform-api-reference#ranges) 中的例子来了解请求和响应的头、状态码、上限、排序和跳转的细节。
 
 ### 请求
 

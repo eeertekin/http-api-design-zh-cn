@@ -2,31 +2,24 @@
 
 ## 概述
 
-This guide describes a set of HTTP+JSON API design practices, originally
-extracted from work on the [Heroku Platform API](https://devcenter.heroku.com/articles/platform-api-reference).
+该指南讲解了一系列 TTP+JSON API 设计经验。这些经验最初来自 [Heroku 平台 API](https://devcenter.heroku.com/articles/platform-api-reference) 的实践。
 
-This guide informs additions to that API and also guides new internal
-APIs at Heroku. We hope it’s also of interest to API designers
-outside of Heroku.
+该指南对此 API 进行了补充，并且对 Heroku 的新的内部 API 起到了指导作用。我们希望在 Heroku 之外的 API 设计者也会对此感兴趣。
 
-Our goals here are consistency and focusing on business logic while
-avoiding design bikeshedding. We’re looking for _a good, consistent,
-well-documented way_ to design APIs, not necessarily _the only/ideal
-way_.
+本文的目标是在保持一致性，且关注业务逻辑的同时，避免设计歧义。我们一直在寻找_一种良好的、一致的、文档化的方法_来设计 API，但没必要是_唯一的/理想化的方法_。
 
-We assume you’re familiar with the basics of HTTP+JSON APIs and won’t
-cover all of the fundamentals of those in this guide.
+本文假设读者已经对 HTTP+JSON API 的基本知识有所了解，因此不会在指南中涵盖所有的基础概念。
 
-We welcome [contributions](CONTRIBUTING.md) to this guide.
+欢迎对该指南给与[贡献](CONTRIBUTING.md)。
 
 ## 目录
 
-* [Foundations](#foundations)
-  *  [Require TLS](#require-tls)
-  *  [Version with Accepts header](#version-with-accepts-header)
-  *  [Support caching with Etags](#support-caching-with-etags)
-  *  [Trace requests with Request-Ids](#trace-requests-with-request-ids)
-  *  [Paginate with ranges](#paginate-with-ranges)
+* [基础](#基础)
+  *  [必须使用 TLS](#必须使用-tls)
+  *  [用 Accept 头指定版本](#用-Accept-头指定版本)
+  *  [利用 Etag 支持缓存](#利用-Etag-支持缓存)
+  *  [通过 Request-Id 跟踪请求](#通过-Request-Id-跟踪请求)
+  *  [使用 Content-Range 进行分页](#使用 Content-Range 进行分页)
 * [Requests](#requests)
   *  [Return appropriate status codes](#return-appropriate-status-codes)
   *  [Provide full resources where available](#provide-full-resources-where-available)

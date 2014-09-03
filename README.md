@@ -21,18 +21,18 @@ _一种良好的、一致的、文档化的方法_来设计 API，但没必要�
 
 * [基础](#基础)
   *  [必须使用 TLS](#必须使用-tls)
-  *  [用 Accept 头指定版本](#用-Accept-头指定版本)
-  *  [利用 Etag 支持缓存](#利用-Etag-支持缓存)
-  *  [通过 Request-Id 跟踪请求](#通过-Request-Id-跟踪请求)
-  *  [使用 Content-Range 进行分页](#使用 Content-Range 进行分页)
-* [Requests](#requests)
-  *  [Return appropriate status codes](#return-appropriate-status-codes)
-  *  [Provide full resources where available](#provide-full-resources-where-available)
-  *  [Accept serialized JSON in request bodies](#accept-serialized-json-in-request-bodies)
-  *  [Use consistent path formats](#use-consistent-path-formats)
-  *  [Downcase paths and attributes](#downcase-paths-and-attributes)
-  *  [Support non-id dereferencing for convenience](#support-non-id-dereferencing-for-convenience)
-  *  [Minimize path nesting](#minimize-path-nesting)
+  *  [用 Accept 头指定版本](#用-accept-头指定版本)
+  *  [利用 Etag 支持缓存](#利用-etag-支持缓存)
+  *  [通过 Request-Id 跟踪请求](#通过-request-id-跟踪请求)
+  *  [使用 Content-Range 进行分页](#使用-content-range-进行分页)
+* [请求](#请求)
+  *  [返回适当的状态码](#返回适当的状态码)
+  *  [尽可能提供完整的资源](#尽可能提供完整的资源)
+  *  [允许 JSON 编码的请求体](#允许-json-码的请求体)
+  *  [使用一致的路径格式](#使用一致的路径格式)
+  *  [小写的路径和属性](#小写的路径和属性)
+  *  [为了方便支持非 id 的引用](#为了方便支持非-id-的引用)
+  *  [最少的路径嵌套](#最少的路径嵌套)
 * [Responses](#responses)
   *  [Provide resource (UU)IDs](#provide-resource-uuids)
   *  [Provide standard timestamps](#provide-standard-timestamps)
@@ -84,40 +84,33 @@ Accept: application/vnd.heroku+json; version=3
 
 ### 请求
 
-#### 返回恰当的状态码
+#### 返回适当的状态码
 
-Return appropriate HTTP status codes with each response. Successful
-responses should be coded according to this guide:
+对每一个请求都返回适当的 HTTP 状态码。根据本指南，成功的响应当使用以下代码：
 
-* `200`: Request succeeded for a `GET` calls, and for `DELETE` or
-  `PATCH` calls that complete synchronously
-* `201`: Request succeeded for a `POST` call that completes
-  synchronously
-* `202`: Request accepted for a `POST`, `DELETE`, or `PATCH` call that
-  will be processed asynchronously
-* `206`: Request succeeded on `GET`, but only a partial response
-  returned: see [above on ranges](#paginate-with-ranges)
+* `200`: 对于 `GET` 以及完全同步的 `DELETE` 或 `PATCH` 的请求成功时
+* `201`: 对于完全同步的 `POST` 请求成功时
+* `202`: 对于异步的 `POST`、`DELETE` 或 `PATCH` 请求被接受
+* `206`: `GET` 请求成功，不过只有部分内容被返回：参阅[前面关于分页的内容](#使用-content-range-进行分页)
 
-Pay attention to the use of authentication and authorization error codes:
+在使用身份验证与身份验证错误码时务必当心：
 
-* `401 Unauthorized`: Request failed because user is not authenticated
-* `403 Forbidden`: Request failed because user does not have authorization to access a specific resource
+* `401 Unauthorized`: 由于用户未进行身份验证，所以请求失败
+* `403 Forbidden`: 由于用户无权对特定资源进行访问，所以请求失败
 
-Return suitable codes to provide additional information when there are errors:
+当遇到错误的时候，需要返回合适的代码里提供附加的信息：
 
-* `422 Unprocessable Entity`: Your request was understood, but contained invalid parameters
-* `429 Too Many Requests`: You have been rate-limited, retry later
-* `500 Internal Server Error`: Something went wrong on the server, check status site and/or report the issue
+* `422 Unprocessable Entity`: 请求可以被解析，但包含了错误的参数
+* `429 Too Many Requests`: 请求达到频度限制，稍候再试
+* `500 Internal Server Error`: 服务器发生了一些错误，检查状态站点或提交一个 issue
 
-Refer to the [HTTP response code spec](http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html)
-for guidance on status codes for user error and server error cases.
+参阅 [HTTP response code spec](http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html)
+了解用户错误与服务器错误的情况下的状态码。
 
-#### 在可能的情况下提供完整的资源
+#### 尽可能提供完整的资源
 
-Provide the full resource representation (i.e. the object with all
-attributes) whenever possible in the response. Always provide the full
-resource on 200 and 201 responses, including `PUT`/`PATCH` and `DELETE`
-requests, e.g.:
+在可能的情况下，在响应中提供完整的资源（例如对象和其所有属性）。
+在 200 和 201 响应中提供完整的资源，包括 `PUT`/`PATCH` 和 `DELETE` 请求，例如：
 
 ```
 $ curl -X DELETE \  
@@ -134,8 +127,7 @@ Content-Type: application/json;charset=utf-8
 }
 ```
 
-202 responses will not include the full resource representation,
-e.g.:
+202 响应将不会包含完整的资源，例如：
 
 ```
 $ curl -X DELETE \  
@@ -147,11 +139,10 @@ Content-Type: application/json;charset=utf-8
 {}
 ```
 
-#### 允许 JSON 序列化的请求体
+#### 允许 JSON 编码的请求体
 
-Accept serialized JSON on `PUT`/`PATCH`/`POST` request bodies, either
-instead of or in addition to form-encoded data. This creates symmetry
-with JSON-serialized response bodies, e.g.:
+对于 `PUT`/`PATCH`/`POST` 允许使用 JSON 编码的请求体，可以看作是对表单数据的替换或补充。
+这与 JSON 编码的响应体对称，例如：
 
 ```
 $ curl -X POST https://service.com/apps \
@@ -173,19 +164,18 @@ $ curl -X POST https://service.com/apps \
 
 ##### 资源名
 
-Use the plural version of a resource name unless the resource in question is a singleton within the system (for example, in most systems a given user would only ever have one account). This keeps it consistent in the way you refer to particular resources.
+使用附带版本的资源名称，除非该资源在系统中仅有一个实例（例如，在大多数系统里，一个给定的用户只能有一个账户）。
+这与引用特定资源的方法一致。
 
 ##### 操作
 
-Prefer endpoint layouts that don’t need any special actions for
-individual resources. In cases where special actions are needed, place
-them under a standard `actions` prefix, to clearly delineate them:
+对于个别无须特定操作的资源，宁可使用直接的布局。而需要特定操作的情况下，
+将其放置在标准的 `actions` 前缀后，来描述它们：
 
 ```
 /resources/:resource/actions/:action
 ```
-
-e.g.
+例如：
 
 ```
 /runs/{run_id}/actions/stop
@@ -193,16 +183,13 @@ e.g.
 
 #### 小写的路径和属性
 
-Use downcased and dash-separated path names, for alignment with
-hostnames, e.g:
+使用小写的、横线分隔的路径名称，与主机名一致，例如：
 
 ```
 service-api.com/users
 service-api.com/app-setups
 ```
-
-Downcase attributes as well, but use underscore separators so that
-attribute names can be typed without quotes in JavaScript, e.g.:
+属性也小写，但是使用下划线分隔，这样属性名在 JavaScript 里无须转义，例如：
 
 ```
 service_class: "first"
@@ -210,31 +197,26 @@ service_class: "first"
 
 #### 为了方便支持非 id 的引用
 
-In some cases it may be inconvenient for end-users to provide IDs to
-identify a resource. For example, a user may think in terms of a Heroku
-app name, but that app may be identified by a UUID. In these cases you
-may want to accept both an id or name, e.g.:
+在某些情况下，让最终用户提供 ID 来标识一个资源可能不是那么方便。
+例如，用户可能想的是 HeroKu 的应用名称，但是那个应用可能是用 UUID 标识的。
+在这种情况里，可能需要同时接受 ID 和名称，例如：
 
 ```
 $ curl https://service.com/apps/{app_id_or_name}
 $ curl https://service.com/apps/97addcf0-c182
 $ curl https://service.com/apps/www-prod
 ```
+不要仅接受名字，而将 ID 排除在外。
 
-Do not accept only names to the exclusion of IDs.
+#### 最少的路径嵌套
 
-#### 最小化路径嵌套
-
-In data models with nested parent/child resource relationships, paths
-may become deeply nested, e.g.:
+在数据模型中有着父子嵌套关系的资源，路径可能会深层嵌套，例如：
 
 ```
 /orgs/{org_id}/apps/{app_id}/dynos/{dyno_id}
 ```
-
-Limit nesting depth by preferring to locate resources at the root
-path. Use nesting to indicate scoped collections. For example, for the
-case above where a dyno belongs to an app belongs to an org:
+限制嵌套的深度，让资源相对于根路径来定位。使用嵌套来表示域集合。
+例如，上面的例子中 dyno 属于一个 app，app 属于一个 org：
 
 ```
 /orgs/{org_id}

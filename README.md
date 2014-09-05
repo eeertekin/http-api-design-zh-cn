@@ -2,7 +2,7 @@
 
 ## 概述
 
-该指南讲解了一系列 TTP+JSON API 设计经验。这些经验最初来自 
+该指南讲解了一系列 HTTP+JSON API 设计经验。这些经验最初来自 
 [Heroku 平台 API](https://devcenter.heroku.com/articles/platform-api-reference) 
 的实践。
 

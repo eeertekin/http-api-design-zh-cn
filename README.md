@@ -33,14 +33,14 @@ _一种良好的、一致的、文档化的方法_来设计 API，但没必要�
   *  [小写的路径和属性](#小写的路径和属性)
   *  [为了方便支持非 id 的引用](#为了方便支持非-id-的引用)
   *  [最少的路径嵌套](#最少的路径嵌套)
-* [Responses](#responses)
-  *  [Provide resource (UU)IDs](#provide-resource-uuids)
-  *  [Provide standard timestamps](#provide-standard-timestamps)
-  *  [Use UTC times formatted in ISO8601](#use-utc-times-formatted-in-iso8601)
-  *  [Nest foreign key relations](#nest-foreign-key-relations)
-  *  [Generate structured errors](#generate-structured-errors)
-  *  [Show rate limit status](#show-rate-limit-status)
-  *  [Keep JSON minified in all responses](#keep-json-minified-in-all-responses)
+* [响应](#响应)
+  *  [为资源提供 (UU)ID](#为资源提供-uuid)
+  *  [提供标准的时间戳](#提供标准的时间戳)
+  *  [使用 ISO8601 格式化的 UTC 时间](#使用-iso8601-格式化的-utc-时间)
+  *  [嵌套的外键关系](#嵌套的外键关系)
+  *  [生成结构化的错误](#生成结构化的错误)
+  *  [显示请求频度限制的状态](#显示请求频度限制的状态)
+  *  [在所有请求中都保持 JSON 简洁](#在所有请求中都保持-json-简洁)
 * [Artifacts](#artifacts)
   *  [Provide machine-readable JSON schema](#provide-machine-readable-json-schema)
   *  [Provide human-readable docs](#provide-human-readable-docs)
@@ -228,14 +228,12 @@ $ curl https://service.com/apps/www-prod
 
 ### 响应
 
-#### 提供资源的 (UU)ID
+#### 为资源提供 (UU)ID
 
-Give each resource an `id` attribute by default. Use UUIDs unless you
-have a very good reason not to. Don’t use IDs that won’t be globally
-unique across instances of the service or other resources in the
-service, especially auto-incrementing IDs.
+给每个资源一个默认的 `id` 属性。除非有一个好理由，否则还是使用 UUID 吧。
+不要使用那些在跨服务器实例或服务的其他资源中不是全局唯一的 ID，特别是不要使用自增 ID。
 
-Render UUIDs in downcased `8-4-4-4-12` format, e.g.:
+将 UUID 定义为小写的 `8-4-4-4-12` 格式，例如：
 
 ```
 "id": "01234567-89ab-cdef-0123-456789abcdef"
@@ -243,8 +241,7 @@ Render UUIDs in downcased `8-4-4-4-12` format, e.g.:
 
 #### 提供标准的时间戳
 
-Provide `created_at` and `updated_at` timestamps for resources by default,
-e.g:
+为资源默认提供 `created_at` 和 `updated_at` 时间戳，例如：
 
 ```json
 {
@@ -254,22 +251,19 @@ e.g:
   ...
 }
 ```
-
-These timestamps may not make sense for some resources, in which case
-they can be omitted.
+这些时间说对于某些资源来说可能没有实际意义，在这些情况下它们可以被省略。
 
 #### 使用 ISO8601 格式化的 UTC 时间
 
-Accept and return times in UTC only. Render times in ISO8601 format,
-e.g.:
+只使用 UTC 接收或返回时间。用 ISO8601 格式表达时间，例如：
 
 ```
 "finished_at": "2012-01-01T12:00:00Z"
 ```
 
-#### 嵌套的键关系
+#### 嵌套的外键关系
 
-Serialize foreign key references with a nested object, e.g.:
+用嵌套的对象来表达外键关系，例如：
 
 ```json
 {
@@ -281,7 +275,7 @@ Serialize foreign key references with a nested object, e.g.:
 }
 ```
 
-Instead of e.g:
+而不是：
 
 ```json
 {
@@ -291,9 +285,7 @@ Instead of e.g:
 }
 ```
 
-This approach makes it possible to inline more information about the
-related resource without having to change the structure of the response
-or introduce more top-level response fields, e.g.:
+这一机制允许嵌入更多相关资源的信息，而无须修改响应的数据结构，或引入更多的顶级字段，例如：
 
 ```json
 {
@@ -309,10 +301,8 @@ or introduce more top-level response fields, e.g.:
 
 #### 生成结构化的错误
 
-Generate consistent, structured response bodies on errors. Include a
-machine-readable error `id`, a human-readable error `message`, and
-optionally a `url` pointing the client to further information about the
-error and how to resolve it, e.g.:
+生成一致的、结构化的错误响应。包括机器可识别的错误 `id`，人工可读的错误 `信息`，
+以及可选的 `url` 引导客户了解关于错误的更进一步的信息和解决方案，例如：
 
 ```
 HTTP/1.1 429 Too Many Requests
@@ -325,31 +315,25 @@ HTTP/1.1 429 Too Many Requests
   "url":     "https://docs.service.com/rate-limits"
 }
 ```
-
-Document your error format and the possible error `id`s that clients may
-encounter.
+对错误格式和客户端可能遇到的错误 `id` 编写文档。
 
 #### 显示请求频度限制的状态
 
-Rate limit requests from clients to protect the health of the service
-and maintain high service quality for other clients. You can use a
-[token bucket algorithm](http://en.wikipedia.org/wiki/Token_bucket) to
-quantify request limits.
+限制客户端的请求频度可以保护服务，并保持其他客户端较高的服务质量。可以使用 
+[token bucket algorithm](http://en.wikipedia.org/wiki/Token_bucket) 来验证请求的频度。
 
-Return the remaining number of request tokens with each request in the
-`RateLimit-Remaining` response header.
+在每个请求里都用 `RateLimit-Remaining` 响应头返回请求 token 的剩余请求数。
 
 #### 在所有请求中都保持 JSON 简洁
 
-Extra whitespace adds needless response size to requests, and many
-clients for human consumption will automatically "prettify" JSON
-output. It is best to keep JSON responses minified e.g.:
+额外的空白字符会增加响应的大小，这是不必要的，而许多人工的客户端都会自动“美化” JSON 的输出。
+所以最好让 JSON 的响应保持最小，例如：
 
 ```json
 {"beta":false,"email":"alice@heroku.com","id":"01234567-89ab-cdef-0123-456789abcdef","last_login":"2012-01-01T12:00:00Z", "created_at":"2012-01-01T12:00:00Z","updated_at":"2012-01-01T12:00:00Z"}
 ```
 
-Instead of e.g.:
+而不是：
 
 ```json
 {
@@ -361,11 +345,8 @@ Instead of e.g.:
   "updated_at": "2012-01-01T12:00:00Z"
 }
 ```
-
-You may consider optionally providing a way for clients to retreive 
-more verbose response, either via a query parameter (e.g. `?pretty=true`)
-or via an `Accept` header param (e.g.
-`Accept: application/vnd.heroku+json; version=3; indent=4;`).
+也可以考虑为客户端增加可选的方式来输出更详细的响应，不论是通过请求参数（例如 `?pretty=true`）
+或者通过 `Accept` 头参数（例如 `Accept: application/vnd.heroku+json; version=3; indent=4;`）。
 
 ### 辅助
 

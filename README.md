@@ -41,11 +41,11 @@ _一种良好的、一致的、文档化的方法_来设计 API，但没必要�
   *  [生成结构化的错误](#生成结构化的错误)
   *  [显示请求频度限制的状态](#显示请求频度限制的状态)
   *  [在所有请求中都保持 JSON 简洁](#在所有请求中都保持-json-简洁)
-* [Artifacts](#artifacts)
-  *  [Provide machine-readable JSON schema](#provide-machine-readable-json-schema)
-  *  [Provide human-readable docs](#provide-human-readable-docs)
-  *  [Provide executable examples](#provide-executable-examples)
-  *  [Describe stability](#describe-stability)
+* [辅助](#辅助)
+  *  [提供机器可识别的 JSON schema](#提供机器可识别的-json-schema)
+  *  [提供可读的文档](#提供可读的文档)
+  *  [提供可执行的例子](#提供可执行的例子)
+  *  [对稳定度进行描述](#对稳定度进行描述)
 
 ### 基础
 
@@ -352,54 +352,46 @@ HTTP/1.1 429 Too Many Requests
 
 #### 提供机器可识别的 JSON schema
 
-Provide a machine-readable schema to exactly specify your API. Use
-[prmd](https://github.com/interagent/prmd) to manage your schema, and ensure
-it validates with `prmd verify`.
+提供机器可识别的 schema 来明确你的 API。使用 [prmd](https://github.com/interagent/prmd)
+来管理这些模式，并用 `prmd verify` 来验证。
 
 #### 提供可读的文档
 
-Provide human-readable documentation that client developers can use to
-understand your API.
+提供可读的文档来让客户端开发者了解你的 API。
 
-If you create a schema with prmd as described above, you can easily
-generate Markdown docs for all endpoints with with `prmd doc`.
+如果用上面提到的 prmd 创建了一个 schema，就可以很容易的通过 
+`prmd doc` 为所有接口创建 Markdown 文档。
 
-In addition to endpoint details, provide an API overview with
-information about:
+作为接口的附加细节，为 API 提供以下信息的概述：
 
-* Authentication, including acquiring and using authentication tokens.
-* API stability and versioning, including how to select the desired API
-  version.
-* Common request and response headers.
-* Error serialization format.
-* Examples of using the API with clients in different languages.
+* 身份验证，包括获得和使用身份验证 token；
+* API 的稳定程度与版本状况，包括如何选择目标版本的 API；
+* 通用的请求和响应头；
+* 错误的格式；
+* 不同客户端语言的使用示例。
 
 #### 提供可执行的例子
 
-Provide executable examples that users can type directly into their
-terminals to see working API calls. To the greatest extent possible,
-these examples should be usable verbatim, to minimize the amount of
-work a user needs to do to try the API, e.g.:
+提供用户可以直接在终端中输入来了解 API 调用情况的可执行的例子。
+为了最大程度的可扩展性，这些例子应当每行都可以使用，
+以降低用户尝试这些 API 的工作量，例如：
 
 ```
 $ export TOKEN=... # acquire from dashboard
 $ curl -is https://$TOKEN@service.com/users
 ```
 
-If you use [prmd](https://github.com/interagent/prmd) to generate Markdown
-docs, you will get examples for each endpoint for free.
+如果你使用 [prmd](https://github.com/interagent/prmd) 来生成 Markdown 文档，
+你可以很容易的获得每个接口的例子。
 
 #### 对稳定度进行描述
 
-Describe the stability of your API or its various endpoints according to
-its maturity and stability, e.g. with prototype/development/production
-flags.
+对你的 API 的稳定程度进行描述，包括不同接口的成熟度和稳定度。
+例如，使用 prototype/development/production 标识。
 
-See the [Heroku API compatibility policy](https://devcenter.heroku.com/articles/api-compatibility-policy)
-for a possible stability and change management approach.
+参阅 [Heroku API compatibility policy](https://devcenter.heroku.com/articles/api-compatibility-policy)
+了解可能的稳定度和变更管理的方法。
 
-Once your API is declared production-ready and stable, do not make
-backwards incompatible changes within that API version. If you need to
-make backwards-incompatible changes, create a new API with an
-incremented version number.
+一旦 API 被定义为生产环境适用且为稳定的，就不要对那个版本的 API 进行任何会破坏向后兼容性的改变。
+如果需要进行向后不兼容的修改，创建一个具有更高版本号的新 API。
 
